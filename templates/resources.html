@@ -68,6 +68,9 @@
                     <div class="span2">
                         <strong> Resource </strong>
                     </div>
+		    <div class="span2">
+		    	<strong> Owner </strong>
+		    </div>
                     <div class="span3">
                       <strong> Query </strong>
                     </div>
@@ -84,6 +87,9 @@
                             <input type="hidden" name="state" data-bind="value: state">
                                <div class="span2">
                                    <span data-bind="text: resource"></span>
+                               </div>
+				<div class="span2">
+                                   <span data-bind="text: owner"></span>
                                </div>
                                <div class="span3">
                                    <span data-bind="text: query"></span>
@@ -235,6 +241,7 @@
 			            processor = {
 			                "state":data.state,
 			                "status":"pending",
+			                "owner" : self.selectedCatalog().owner,
 			                "resource":requestdata.resource_name,
 			                "query": requestdata.query,
 			                "token": "None"

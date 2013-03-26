@@ -18,6 +18,7 @@ class ProcessorRequest(Base):
     catalog = Column(String(256))
     resource = Column(String(256))
     resource_uri = Column(String(256))
+    owner   = Column(String(256))
     redirect =  Column(String(256))
     expiry = Column(BigInteger)
     query = Column(String(512))
@@ -34,6 +35,7 @@ class ProcessorRequest(Base):
             'resource_uri':self.resource_uri,
             'expiry': self.expiry,
             'redirect': self.redirect,
+            'owner': self.owner,
             'catalog':self.catalog,
             'query':self.query,
             'code':self.code,
@@ -42,7 +44,7 @@ class ProcessorRequest(Base):
         }
         
     def __repr__(self):
-        return "{state:'%s', resource:'%s', resource_uri:'%s', expiry: %d, redirect:'%s', catalog:'%s', query:'%s', code:'%s', token:'%s', status:'%s'}" % (self.state, self.resource, self.resource_uri, self.expiry, self.redirect, self.catalog, self.query, self.code, self.token, self.status)
+        return "{state:'%s', resource:'%s', resource_uri:'%s', expiry: %d, redirect:'%s', owner:'%s', catalog:'%s', query:'%s', code:'%s', token:'%s', status:'%s'}" % (self.state, self.resource, self.resource_uri, self.expiry, self.redirect, self.owner, self.catalog, self.query, self.code, self.token, self.status)
 
 class ExecutionRequest(Base):
     __tablename__ = 'executionrequest'
@@ -104,8 +106,6 @@ def getAllExecutionResponses():
 
     result = db_session.query(ExecutionResponse.execution_id, ExecutionResponse.received, ExecutionResponse.access_token, ExecutionRequest.parameters, ProcessorRequest.query).filter(ExecutionRequest.execution_id ==ExecutionResponse.execution_id).filter(ProcessorRequest.token == ExecutionResponse.access_token).all()
     
-   # result = db_session.query(ExecutionResponse.execution_id, ExecutionResponse.received, ExecutionResponse.access_token, ExecutionRequest.parameters, ProcessorRequest.query).filter(ExecutionResponse.execution_id=ExecutionRequest.execution_id).join(ProcessorRequest, ProcessorRequest.token==ExecutionResponse.access_token).join(ExecutionRequest, ExecutionRequest.access_token==ExecutionResponse.access_token).all()
-    
     return result
     
 
@@ -126,8 +126,8 @@ def fetchIdentifier(catalog):
     return Identifier.query.filter(Identifier.catalog==catalog).first()
     
     
-def addProcessorRequest(state, catalog, resource, resource_uri, redirect, expiry, query):   
-    prorec = ProcessorRequest(state=state, catalog=catalog, resource=resource, resource_uri=resource_uri, redirect=redirect, expiry=expiry, query=query, status="pending")
+def addProcessorRequest(state, catalog, resource, resource_uri, owner, redirect, expiry, query):   
+    prorec = ProcessorRequest(state=state, catalog=catalog, resource=resource, resource_uri=resource_uri, owner=owner, redirect=redirect, expiry=expiry, query=query, status="pending")
     
     try:
         db_session.add(prorec)

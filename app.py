@@ -236,7 +236,7 @@ def request_processor():
         
         #store the state and the code and the various bits for re-use?
          
-        addProcessorRequest(state=state, catalog=catalog, resource=resource_name,resource_uri=resource_uri,redirect=client.redirect,expiry=int(expiry),query=query)
+        addProcessorRequest(state=state, catalog=catalog, resource=resource_name,resource_uri=resource_uri,redirect=client.redirect, owner=owner, expiry=int(expiry),query=query)
         
         return json.dumps({'success':True, 'state':state})
     
