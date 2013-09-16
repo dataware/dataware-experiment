@@ -1,4 +1,5 @@
 import os
+import sys
 from flask import Flask, Response, request, url_for, render_template, flash, redirect, session, jsonify
 from util import *
 import urllib2
@@ -7,27 +8,32 @@ import urlparse
 import json
 import OpenIDManager
 import hashlib
+import ConfigParser
 from database import init_db
 from datetime import datetime, timedelta
 from functools import wraps
 from UpdateManager import *
 from gevent.wsgi import WSGIServer
 
-app = Flask(__name__)
-app.config.from_object('settings')
 
-init_db(app.config['URI'])
+configfile = sys.argv[1]
+Config = ConfigParser.ConfigParser()
+Config.read(configfile)
+ROOT_PATH = Config.get("DatawareClient", "root_path")
+app = Flask(__name__, template_folder="%s/templates" % ROOT_PATH, static_folder="%s/static" % ROOT_PATH)
+
+init_db(Config.get("DatawareClient",'uri'))
 from models import *
 um = UpdateManager()
-print "created update manager"
 
-CATALOG     = app.config['CATALOG']
-REALM       = app.config['REALM']
-CLIENTNAME  = app.config['CLIENTNAME'] 
-RESOURCEUSERNAME = app.config['RESOURCEUSERNAME'] 
-RESOURCENAME     = app.config['RESOURCENAME'] 
-EXTENSION_COOKIE = app.config['EXTENSION_COOKIE']
-
+#-----constants------------
+PORT	    = Config.get("DatawareClient", "port")
+CATALOG     = Config.get("DatawareClient", "catalog")
+REALM       = Config.get("DatawareClient", "realm")
+CLIENTNAME  = Config.get("DatawareClient", "clientname") 
+RESOURCEUSERNAME = Config.get("DatawareClient", "resourceusername") 
+RESOURCENAME     = Config.get("DatawareClient", "resourcename") 
+EXTENSION_COOKIE = Config.get("DatawareClient", "extension_cookie")
 
 def login_required(f):
     @wraps(f)
@@ -451,15 +457,10 @@ def _delete_authentication_cookie():
 def user_error( e ):
     
     return  "An error has occurred: %s" % ( e )
-            
-            
-               
-if __name__ == '__main__':
-    # Bind to PORT if defined, otherwise default to 5000.ccl
-    
-    port =  int(app.config['PORT'])
-    http_server = WSGIServer(('', port), app)
+
+def main():
+    http_server = WSGIServer(('', int(PORT)), app)
     http_server.serve_forever()
-    
-    #app.run(debug=True,host='0.0.0.0', port=port)
- 
+            
+if __name__ == '__main__':
+    main() 
