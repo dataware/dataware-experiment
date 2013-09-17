@@ -21,7 +21,7 @@ Config = ConfigParser.ConfigParser()
 Config.read(configfile)
 ROOT_PATH = Config.get("DatawareClient", "root_path")
 app = Flask(__name__, template_folder="%s/templates" % ROOT_PATH, static_folder="%s/static" % ROOT_PATH)
-
+app.secret_key = Config.get("DatawareClient", "secret_key")
 init_db(Config.get("DatawareClient",'uri'))
 from models import *
 um = UpdateManager()

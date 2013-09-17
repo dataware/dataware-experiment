@@ -39,3 +39,4 @@ nosetests.xml
 *.class
 currentcost-energy-monitor.jar
 src/deb_dist
+.DS_Store

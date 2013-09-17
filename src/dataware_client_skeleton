@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import sys
-#sys.path.append('/usr/share/pyshared/dataware-client-skeleton')
-sys.path.append('/root/dataware.client-skeleton/src/dataware-client-skeleton')
+sys.path.append('/usr/share/pyshared/dataware-client-skeleton')
 import app 
 app.main()
