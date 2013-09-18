@@ -7,7 +7,7 @@ Standards-Version: 3.8.4
 
 Package: dataware-client-skeleton
 Architecture: armel 
-Depends: mysql-server, dbconfig-common, dataware-mysql-python, dataware-sqlalchemy,  dataware-wsgiref, dataware-greenlet, dataware-gevent, dataware-sqlparse, ${misc:Depends}, ${python:Depends}
+Depends: mysql-server, dbconfig-common, dataware-flask, dataware-mysql-python, dataware-sqlalchemy,  dataware-wsgiref, dataware-greenlet, dataware-gevent, dataware-sqlparse, ${misc:Depends}, ${python:Depends}
 XB-Python-Version: ${python:Versions}
 Provides: ${python:Provides}
 Description: Dataware skeleton client
