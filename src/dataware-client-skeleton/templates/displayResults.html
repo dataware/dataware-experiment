@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block result %}
+     <h1> Results </h1>
+     <table class="table table-condensed table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>User Id</th>
+                <th>Result</th>
+            </tr>   
+        </thead>                
+        <tbody> 
+            {% for row in results %}
+                <tr>
+                    <td>{{row.user_id}}</td>
+                    <td>
+                    	<table>
+                    		<th>Url</th>
+                    		<th>Answer</th>
+                    		<tbody>
+                    		 	{% for entry in row.result %}
+                    		 		<tr>
+                    		 			<td>
+                    		 				{{entry['url']}}
+                    		 			</td>
+                    		 			<td>
+                    		 				{{entry['ans']}}
+                    		 			</td>
+                    		 		</tr>
+                    		 	{% endfor %}
+                    		</tbody>
+                    	</table>
+                    </td>
+                </tr> 
+            {% endfor %}
+        </tbody>
+    </table>  
+{% endblock %}

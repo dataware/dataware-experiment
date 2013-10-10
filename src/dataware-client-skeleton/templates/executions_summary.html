@@ -17,6 +17,7 @@
                 <td> {{execution.received}}</td>  
                 <td>    
                     <form action="{{url_for('view', execution_id=execution.execution_id)}}" method=post>
+                    	<input type="hidden" name="experimentBoolean" value = "false">
                         <input type="hidden" name="processor_id" value="{{execution.access_token}}">
                         <button class="btn btn-primary" type="submit">View!</button>
                     </form>

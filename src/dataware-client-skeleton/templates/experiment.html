@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+
+{% block executions_summary %}
+	
+	<h3> Experiment </h3>
+	
+	<div>
+	    <div id = "iframeContainer" style="height:600px">
+	    	<iframe id = "iframeContent"  width="100%" height="100%" frameborder="0" scrolling="yes">				
+			 	<p>Your browser does not support iframes.</p>
+			</iframe>
+	    </div>
+	    
+		<div id="dialog" title="Select your option">
+	    	<p>Click 'Yes' if you have visited the page underneath the dialog before, 'No' if you haven't and 'Can't see' 
+	    	if there is no page. </p>
+		</div>
+	</div>
+	
+<style>
+	iframe {
+	 	background-image: url("http://192.168.33.15:9090/static/images/ajax-loader.gif");   
+	    background-repeat: no-repeat;
+	}
+</style>	
+<script type="text/javascript">
+   var count = 0;
+   var urlList;
+   var finalResults = [];
+   var access_token;
+   function loadIframe(){
+   		if(count === urlList.length ){
+   			console.log('test over');
+   			postAnswers();	
+   		}
+   		else{
+   			console.log('hello url is ' + urlList[count]);
+		    $("#iframeContent").attr("src", urlList[count]);
+		    count = count + 1; 
+   		}
+   }
+   
+   function storeAnswer(ans){
+   		var element = {ans:ans, url:urlList[count -1]}
+   		finalResults.push(element);
+   		loadIframe();
+   }
+   
+   function postAnswers(){
+   		   
+   		   $.ajax({
+                type: 'POST',
+                url: '/storeAnswer',
+                dataType: 'html',
+                data:{finalResults: JSON.stringify(finalResults), access_token:JSON.stringify(access_token)},
+                success: function( data ) {
+                	$( '#dialog' ).dialog('destroy').remove();
+                    $('.container').html(data);
+                    
+                },
+                error: function( data ) {
+                    alert( " Some error in storing results" );
+                }
+            });
+   }
+   
+   $(function(){
+   		  		
+        urlList = {{experimentUrlList | safe}};
+        console.log('list is ' + urlList[count]);
+        access_token = '{{access_token | safe}}';
+        loadIframe();
+        $( "#dialog" ).dialog({
+            height: 'auto',
+            width: 400,
+            buttons: {
+                "Yes": function() {
+                	ans = '1';
+                	storeAnswer(ans);
+                },
+                "No": function() {
+                	ans = '0';
+                	storeAnswer(ans);
+                },
+                "Can't See": function() {
+                	ans = '2';
+                	storeAnswer(ans);
+                }
+            },
+            closeOnEscape: false,
+            position: { my: "right top", at: "right top", of: window }
+        });
+        $('.ui-dialog-titlebar-close',ui).hide();
+    });
+   
+</script>   
+{% endblock %}

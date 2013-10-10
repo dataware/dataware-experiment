@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block summary %}
+
+    
+    
+        <div class="span12">
+            <div class="well">
+            	<form action={{url_for('logout')}} method=post> 
+              		<p align="centre" >Hurray Experiment is over!!!!!!
+              		</br>
+              
+                      	<input type="hidden" name="access_token" value={{access_token | safe}}>
+                            	
+                        <button type="submit" class="btn">Log Out</button>
+                       
+              		</p>
+            	</form>
+            </div>
+        </div>
+
+{% endblock %}

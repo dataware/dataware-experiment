@@ -5,130 +5,33 @@
 <div class="container">
     <div class="row">
         <div class="span8 offset2 well">
-            <legend> Pick a catalog to view resources </legend>
-            
-           
-            <form data-bind="submit:requestData">
+            <legend> Catalog details for the experiment.</legend>           
+            <form data-bind="submit:requestProcessor">
+                <label for="catalog_uri">Select your catalog</label>
                 <select name="catalog_uri" class="span7" id="catalog_uri">
                         {% for catalog in catalogs%}
                             <option>{{catalog}}</option> 
                         {% endfor %}
                 </select>
-                <button class="btn btn-warning" type="submit">Use!</button>
+                <label for="catalog_username">Provide the Catalog username here</label>
+                <input type="text" name="catalog_username" id="catalog_username">
+                <input type = "hidden" name="resource_uri" id = "resource_uri" value="{{resource_uri}}"/>
+                <button class="btn btn-warning" type="submit">Experiment Request!</button>
             </form>
-        </div>
-    </div>
-    
-    <div data-bind="if: haveresources()">
-        <div class="row">
-            <div class="span12">
-                <legend> Resources </legend>
-                <table class="table table-condensed table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Owner</th>
-                            <th>Resource Name</th>
-                            <th>Action</th>
-                        </tr>   
-                    </thead>                
-                    <tbody data-bind="foreach: resources">
-                        
-                            <tr>
-                                <td data-bind="text: owner"></td>
-                                <td> <a data-bind="click: function(){$parent.retrieve_schema(resource_uri, resource_name)}, text:resource_name"></a></td>  
-                                <td> <i class="icon-road"></i> <a href="#" data-bind="click:function(){$parent.selectedCatalog($data);$parent.toggleQuery();}"> create a new processing request </a> </td>
-                            </tr> 
-                       
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    
-    
-    
-    <div data-bind="if: haveresources()">
-        <div class="row">
-             <div class="span12">
-                <legend> Processors </legend>
-                <ul class="nav nav-pills">
-                   <li data-bind="css:{'active':ampending()}">
-                     <a href='#' data-bind="click:function(){typeToShow('pending')}">Pending</a>
-                   </li>
-                   
-                  <li data-bind="css:{'active':amaccepted()}">
-                     <a href='#' data-bind="click:function(){typeToShow('accepted')}">Accepted</a>
-                   </li>
-                   
-                    <li data-bind="css:{'active':amrejected()}">
-                     <a href='#' data-bind="click:function(){typeToShow('access_denied')}">Rejected</a>
-                   </li>
-                </ul>
-                <div class="row">
-                    <div class="span2">
-                        <strong> Resource </strong>
-                    </div>
-		    <div class="span2">
-		    	<strong> Owner </strong>
-		    </div>
-                    <div class="span3">
-                      <strong> Query </strong>
-                    </div>
-                    <div class="span4" data-bind="visible:amaccepted()">
-                      <strong> Parameters </strong>
-                    </div>
-                    <div class="span2" data-bind="visible:amaccepted()">
-                      <strong> Actions </strong>
-                    </div>
-                </div>
-                <div data-bind="foreach: processorsToShow">
-                    <div class="row">
+            <div data-bind="if: haveprocessors()">
+            	<div data-bind="foreach: processorsToShow">
+                    <div>
                          <form action={{url_for('execute')}} method=post> 
-                            <input type="hidden" name="state" data-bind="value: state">
-                               <div class="span2">
-                                   <span data-bind="text: resource"></span>
-                               </div>
-				<div class="span2">
-                                   <span data-bind="text: owner"></span>
-                               </div>
-                               <div class="span3">
-                                   <span data-bind="text: query"></span>
-                               </div>
-                               <div class="span4" data-bind="visible:$parent.amaccepted()">     
-                                    <input type="text" name="parameters"  value="{}">
-                               </div>
-                                <div class="span2" data-bind="visible:$parent.amaccepted()"> 
-                                    <button type="submit" class="btn">Run</button>
-                                </div> 
+                            <input type="hidden" name="access_token" data-bind="value: token">
+                            <input type="hidden" name="parameters" id="parameters"  value="{}">
+                            <label> Experiment request accepted by Catalog.Start the experiment! </label>
+                            <button type="submit" class="btn">START</button>
                           </form>
                      </div>
-                  </div>
-             </div>
-        </div>
-    </div>  
-    
-    
-    <div data-bind="if: selectedCatalog()">
-        <div class="row" data-bind="visible:query()">
-            <div class="span4">
-               <form data-bind="submit: requestProcessor">
-                     <legend>Request a new processor</legend>
-                     
-                     <label>Catalog: <span data-bind="text:selectedCatalog().catalog_uri"></span></label>
-                     
-                     <label>Owner Name: <span data-bind="text:selectedCatalog().owner"></span></label>
-                     
-                     <label>Resource Name: <span data-bind="text:selectedCatalog().resource_name"></span></label>
-                              
-                     <label>SQL query</label>
-                     <textarea rows="5" name="query" id="query">select * from [resource] limit 100</textarea>
-                     <input type="submit" class="btn">
-                </form>
             </div>
         </div>
     </div>
-    
-    
+            
 </div> <!-- end of container -->
 
 <script type="text/javascript">
@@ -147,12 +50,20 @@
         
         this.event.subscribe(function(newValue){
             processor = $.parseJSON(self.event().data);
+            console.log("inside subscribe " + processor);
             this.updateProcessor(processor);
         },this);
          
        
         this.selectedCatalog = this.resources.length > 0 ? ko.observable(this.resources[0]) : ko.observable();
         
+        console.log('selected catalog ' + this.selectedCatalog);
+        console.log('resource uri is *** ' +  $("#resource_uri").val());
+        
+        this.haveprocessors = ko.computed(function(){
+        	console.log('length of processors ' + self.processors().length )
+            return self.processors().length > 0;
+        },this);
         
         this.haveresources = ko.computed(function(){
             return self.resources().length > 0;
@@ -173,7 +84,7 @@
         });
         
         this.processorsToShow = ko.computed(function(){
-            var desiredType = this.typeToShow();
+            var desiredType = "accepted";
             
             return ko.utils.arrayFilter(this.processors(), function(processor){
                 return processor.status() == desiredType;
@@ -182,6 +93,7 @@
         }, this);
 
         this.updateProcessor = function(processor){
+        	 console.log("inside update processor" + processor);
              var p = ko.utils.arrayFirst(self.processors(), function(item) {return item.state() == processor.state;});
              if (p){
                 p.status(processor.status);
@@ -217,18 +129,19 @@
         };
         
         this.requestProcessor = function(){
-        
-            requestdata =  {    "catalog": self.selectedCatalog().catalog_uri,
-                                "resource_name": self.selectedCatalog().resource_name,
-                                "resource_uri":self.selectedCatalog().resource_uri,
-                                "owner" : self.selectedCatalog().owner,
+            self.request_processors();
+        	console.log('inside request catalog owner is  ' +  $("#catalog_uri").val());
+            requestdata =  {    "catalog": $("#catalog_uri").val(),
+                                "resource_name": "urls",
+                                "resource_uri":$("#resource_uri").val(),
+                                "owner" : $("#catalog_username").val(),
                                 "expiry": 5999999999,
-                                "query": $('textarea#query').val()
+                                "query": "select * from urls;"
                             };
 
             $.ajax({
 			    type: 'POST',
-			    url: '/request',
+			    url: '/experimentRequest',
 			    dataType: "json",
 			    data: requestdata,
 			    
@@ -241,12 +154,12 @@
 			            processor = {
 			                "state":data.state,
 			                "status":"pending",
-			                "owner" : self.selectedCatalog().owner,
 			                "resource":requestdata.resource_name,
 			                "query": requestdata.query,
 			                "token": "None"
 			            };        
 			            self.processors.push(ko.mapping.fromJS(processor));
+                    	window.location = data.redirect;
 			        }else{
 			            alert("error, sorry, client rejected request");
 			        }
@@ -255,11 +168,13 @@
 				    alert( "Sorry, could not request your process" );
 			    }
 			});
+			alert('Wait for catalog to accept your experiment request!');
         };
         
       
         
         this.request_processors = function(){
+        	console.log('inside request processors');
             $.ajax({
                 type: 'GET',
                 url: '/processors',
@@ -321,7 +236,11 @@
 <script>
     $(function(){
         var rlm = new ResourceListModel();
-        //rlm.loadProcessors({{processors | safe}});
+        var localProcessors = {{processors | safe}};
+        console.log('local is ' + localProcessors)
+        rlm.loadProcessors({{processors | safe}});
+        
+        //rlm.request_processors();
         ko.applyBindings(rlm);
     });
 </script>

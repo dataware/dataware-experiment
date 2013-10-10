@@ -3,7 +3,9 @@
 <title>TPC</title>
 
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/ui-lightness/jquery-ui.css" />
 <script src="{{ url_for('static', filename='jquery/jquery-1.7.2.min.js') }}"></script>
+<script src="{{ url_for('static', filename='jquery/jquery-ui.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
 
 <script src="{{ url_for('static', filename='knockout/knockout-min.js') }}"></script> 
@@ -89,10 +91,10 @@
     <div class="navbar-inner">
         <a class="brand" href="#">A third party client!</a>
          <ul class="nav">
-            <li><a href="{{url_for('root')}}" class="menu_button" id="home">home</a></li>
-            <li><a href="{{url_for('register')}}" class="menu_button" id="register">register with catalogs</a></li>
+            <li><a href="{{url_for('root')}}" class="menu_button" id="home">Experiment</a></li>
+            <!-- <li><a href="{{url_for('register')}}" class="menu_button" id="register">register with catalogs</a></li>
             <li><a href="{{url_for('resources')}}" class="menu_button" id="summary">resources</a></li>
-            <li><a href="{{url_for('executions')}}" class="menu_button" id="summary">executions</a></li>
+            <li><a href="{{url_for('executions')}}" class="menu_button" id="summary">executions</a></li>  -->
          </ul> 
     </div>
 </div>
