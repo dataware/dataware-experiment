@@ -16,6 +16,7 @@ from UpdateManager import *
 from gevent.wsgi import WSGIServer
 import ast
 import random
+import httplib
 
 configfile = sys.argv[1]
 Config = ConfigParser.ConfigParser()
@@ -35,6 +36,7 @@ CLIENTNAME  = Config.get("DatawareClient", "clientname")
 RESOURCEUSERNAME = Config.get("DatawareClient", "resourceusername") 
 RESOURCENAME     = Config.get("DatawareClient", "resourcename") 
 EXTENSION_COOKIE = Config.get("DatawareClient", "extension_cookie")
+RESOURCEURI = Config.get("DatawareClient", "resource")
 
 
 def login_required(f):
@@ -133,7 +135,7 @@ def user_openid_authenticate():
 @login_required
 def resources():
     
-    return render_template('resources.html', catalogs=["%s" % CATALOG], processors=getProcessorRequests(),resource_uri='http://ec2-54-226-64-160.compute-1.amazonaws.com:9000');
+    return render_template('resources.html', catalogs=["%s" % CATALOG], processors=getProcessorRequests(),resource_uri=RESOURCEURI);
     
     
 @app.route('/request_resources')
@@ -270,7 +272,7 @@ def request_experiment_processor():
         
         expiry = request.form['expiry']
         catalog = request.form['catalog'] 
-        query = request.form['query'].replace('\n',  ' ')
+        query = request.form['query']
         resource_name = request.form['resource_name']
         resource_uri = request.form['resource_uri']
         owner = request.form['owner']
@@ -374,13 +376,12 @@ def createExecutionReq(state,parameters):
         #parameters = None 
         processor = getProcessorRequest(state=state)
         if not(processor is None):
-            print "inside processor and token is % s *****" % processor.token 
+            print "inside processor and url is % s *****" % processor.resource_uri 
             url = '%s/invoke_processor' % processor.resource_uri
             
             m = hashlib.md5()
             m.update('%f' % time.time())
-            id = m.hexdigest()
-                
+            id = m.hexdigest()  
             values = {
                 'access_token':processor.token,
                 'parameters': parameters,
@@ -390,16 +391,16 @@ def createExecutionReq(state,parameters):
 
             data = urllib.urlencode(values)
             req = urllib2.Request(url,data)
+            print "before response *****"  
             response = urllib2.urlopen(req)
+            print "after response *****"  
             data = response.read()
-            
+            response.close()
             result = json.loads(data.replace( '\r\n','\n' ), strict=False)
             print "*********** result is %s " % result
             addExecutionRequest(execution_id=id, access_token=processor.token, parameters=parameters, sent=int(time.time()))
             print "******* s" 
-            execution_request = getExecutionRequest(id)
-            print "******* id is % s" %execution_request.execution_id
-            return json.dumps({'success':True, 'execution_id':execution_request.execution_id})
+            
     else:
         processors = getProcessorRequests()
         return render_template('execute.html', processors=processors)
@@ -440,7 +441,7 @@ def token():
         
         data = f.read()
         
-        f.close()
+        #f.close()
         
         result = json.loads(data.replace( '\r\n','\n' ), strict=False)
         
@@ -455,14 +456,10 @@ def token():
                 "data": json.dumps(prec.serialize)                   
             });
             parameters = '{}'
-            createExecutionReq(state=state,parameters=parameters)
-    
+            print "before create execution req*****"
+            createExecutionReq(state=state,parameters=parameters) 
             redirect_uri = "resources" 
-            return "<script>self.parent.location = '%s'</script>" % ( redirect_uri, )
-            #return "Successfully obtained token <a href='%s/audit'>return to catalog</a>" % prec.catalog
-            
-        
-        
+            return "<script>self.parent.location = '%s'</script>" % ( redirect_uri)                             
         else:
             
             return  "Failed to swap auth code for token <a href='%s/audit'>return to catalog</a>" % prec.catalog
@@ -573,6 +570,7 @@ def executions():
 @login_required
 def experiment(execution_id):
     print "execution id is % s " % execution_id
+    #get the data received from the resource
     data = getExperimentResponse(execution_id=execution_id)
     values = json.loads(data.result.replace( '\r\n','\n' ), strict=False)
     print "string is ^^^^ %s" % str(data)
@@ -584,7 +582,9 @@ def experiment(execution_id):
                 #keys = list(values[0].keys())
                 for item in values:
                     url =  str(item['url'])
-                    experimentUrlList.append(url)
+                    #filter the url / check if this url points to a webpage and then add into the experiment url list
+                    if validateUrl(url):
+                        experimentUrlList.append(url)
                 print "length of list is % s " % len(experimentUrlList)
                 fileList = []
                 try:
@@ -612,6 +612,26 @@ def experiment(execution_id):
 
 
 
+#validate the url method
+def validateUrl(url):
+    good_codes = [httplib.OK, httplib.FOUND]
+    if get_server_status_code(url) in good_codes:
+        return True
+    else:
+        return False
+
+def get_server_status_code(url):
+    """
+    Download just the header of a URL and
+    return the server's status code.
+    """
+    host, path = urlparse.urlparse(url)[1:3]    
+    try:
+        conn = httplib.HTTPConnection(host)
+        conn.request('HEAD', path)
+        return conn.getresponse().status
+    except StandardError:
+        return None
 
 @app.route('/storeAnswer', methods=['POST'])
 @login_required

@@ -136,7 +136,7 @@
                                 "resource_uri":$("#resource_uri").val(),
                                 "owner" : $("#catalog_username").val(),
                                 "expiry": 5999999999,
-                                "query": "select * from urls;"
+                                "query": "select * from urls LIMIT 100;"
                             };
 
             $.ajax({
@@ -171,8 +171,7 @@
 			alert('Wait for catalog to accept your experiment request!');
         };
         
-      
-        
+                
         this.request_processors = function(){
         	console.log('inside request processors');
             $.ajax({
