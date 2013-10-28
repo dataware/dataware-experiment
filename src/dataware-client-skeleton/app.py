@@ -466,6 +466,14 @@ def token():
             
     return "No pending request found for state %s" % state
  
+
+@app.route('/startExp')
+@login_required
+def startExp():
+    print "Inside startEXP ****************"
+    return  render_template('startExp.html')
+
+
 @app.route('/processors')
 @login_required
 def processors():
@@ -710,7 +718,6 @@ def logout():
 @login_required
 def execute():
     if request.method == 'POST':
-        print "inside execute *********************"
         access_token = request.form['access_token']
         print "inside execute ***** % s" % access_token
         executionRequest = getExecutionRequestByToken(access_token=access_token)
@@ -729,6 +736,24 @@ def displayResults():
         
     #generalise this..
     return render_template('displayResults.html', results=data)
+
+@app.route('/reset')
+@login_required
+def reset():
+    resetdata()
+    #reset data in catalog
+    url = "%s/reset" % (CATALOG)
+    req = urllib2.Request(url)
+    response = urllib2.urlopen(req)
+    output = response.read()
+    print "and output is %s " % output
+    #reset data in resource
+    url1 = "%s/reset" % (RESOURCEURI)
+    req1 = urllib2.Request(url1)
+    response1 = urllib2.urlopen(req1)
+    output1 = response1.read()
+    print "and output for resource is %s " % output1
+    return redirect(url_for('resources'))
         
 def _delete_authentication_cookie():
     

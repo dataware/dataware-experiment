@@ -1,6 +1,6 @@
 from database import Base, db_session
-from sqlalchemy import Column, Integer, TEXT, String, BigInteger
-#from sqlalchemy.dialects.postgresql import TEXT
+from sqlalchemy import Column, Integer, String, BigInteger
+from sqlalchemy.dialects.postgresql import TEXT
 from sqlalchemy.sql import and_
 import traceback
 
@@ -266,6 +266,21 @@ def deleteProcessorRequest(access_token):
 def purgedata():
     db_session.query(ProcessorRequest).delete()
     db_session.query(Identifier).delete()
+    db_session.query(ExecutionRequest).delete()
+    db_session.query(ExecutionResponse).delete()
+    db_session.query(ExperimentResponse).delete()
+    try:
+        db_session.commit()   
+    except:
+        db_session.rollback()
+        raise
+        return False
+    
+    return True   
+
+
+def resetdata():
+    db_session.query(ProcessorRequest).delete()
     db_session.query(ExecutionRequest).delete()
     db_session.query(ExecutionResponse).delete()
     db_session.query(ExperimentResponse).delete()

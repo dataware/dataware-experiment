@@ -5,30 +5,39 @@
 <div class="container">
     <div class="row">
         <div class="span8 offset2 well">
-            <legend> Catalog details for the experiment.</legend>           
-            <form data-bind="submit:requestProcessor">
-                <label for="catalog_uri">Select your catalog</label>
-                <select name="catalog_uri" class="span7" id="catalog_uri">
-                        {% for catalog in catalogs%}
-                            <option>{{catalog}}</option> 
-                        {% endfor %}
-                </select>
-                <label for="catalog_username">Provide the Catalog username here</label>
-                <input type="text" name="catalog_username" id="catalog_username">
-                <input type = "hidden" name="resource_uri" id = "resource_uri" value="{{resource_uri}}"/>
-                <button class="btn btn-warning" type="submit">Experiment Request!</button>
-            </form>
+        	<div id = "processRequestForm">
+        		<form data-bind="submit:requestProcessor" >
+	                <legend> Catalog details for the experiment.</legend>
+	                <label for="catalog_uri">Select your catalog</label>
+	                <select name="catalog_uri" class="span7" id="catalog_uri">
+	                        {% for catalog in catalogs%}
+	                            <option>{{catalog}}</option> 
+	                        {% endfor %}
+	                </select>
+	                <label for="catalog_username">Provide the Catalog username here</label>
+	                <input type="text" name="catalog_username" id="catalog_username">
+	                <input type = "hidden" name="resource_uri" id = "resource_uri" value="{{resource_uri}}"/>
+	                <button class="btn btn-warning" type="submit">Experiment Request!</button>
+	            </form>
+        	</div>         
+            
             <div data-bind="if: haveprocessors()">
             	<div data-bind="foreach: processorsToShow">
                     <div>
                          <form action={{url_for('execute')}} method=post> 
+                         	<h3> Experiment Details.</h3>
+                         	<div id = "innerdiv" style="width:620px;height:50px;" >	                         	
+                         		<span></span>
+                         	</div>
                             <input type="hidden" name="access_token" data-bind="value: token">
                             <input type="hidden" name="parameters" id="parameters"  value="{}">
-                            <label> Experiment request accepted by Catalog.Start the experiment! </label>
+                           
+                            <h3> Start the experiment! </h3>
                             <button type="submit" class="btn">START</button>
                           </form>
                      </div>
-            </div>
+            	</div>
+        	</div>
         </div>
     </div>
             
@@ -236,7 +245,11 @@
     $(function(){
         var rlm = new ResourceListModel();
         var localProcessors = {{processors | safe}};
-        console.log('local is ' + localProcessors)
+        console.log('local is ' + localProcessors.length);
+        if(localProcessors.length > 0 ){
+        	$("#processRequestForm").hide();
+        	$( "#innerdiv span" ).text( "Experiment request accepted by Catalog and now you can undertake the recall test.You will see the webpages which you have browsed and other pages which you haven't." );
+        }
         rlm.loadProcessors({{processors | safe}});
         
         //rlm.request_processors();
