@@ -3,20 +3,58 @@
 {% block summary %}
 
     
-    
-        <div class="span12">
-            <div class="well">
-            	<form action={{url_for('logout')}} method=post> 
-              		<p align="centre" >Hurray Experiment is over!!!!!!
-              		</br>
-              
-                      	<input type="hidden" name="access_token" value={{access_token | safe}}>
-                            	
-                        <button type="submit" class="btn">Log Out</button>
-                       
-              		</p>
-            	</form>
-            </div>
-        </div>
+   
+       <div class="span12">
+           <h2>Summary of Experiment</h2>
+		<svg id="resultPresentation" class="mypiechart"></svg>
+       </div>
+       
+       <script>
+			 var results = {{ arrayToPass|safe }};
+			 console.log('numbers are ' + results);
+			 
+			 var correct = {{arrayToPass.correct|safe}};
+			 var incorrect = {{arrayToPass.incorrect|safe}};
+			 var noAnswer = {{arrayToPass.undefined|safe}};
+			 var testdata = [
+			    {
+			      key: "Correct",
+			      y: correct
+			    },
+			    {
+			      key: "Incorrect",
+			      y: incorrect
+			    },
+			    {
+			      key: "Can't Say",
+			      y: noAnswer
+			    }
+			  ];
+			
+			
+			nv.addGraph(function() {
+			    var width = 500,
+			        height = 500;
+			
+			    var chart = nv.models.pieChart()
+			        .x(function(d) { return d.key })
+			        .y(function(d) { return d.y })
+			        .color(d3.scale.category10().range())
+			        .width(width)
+			        .height(height);
+			
+			      d3.select("#resultPresentation")
+			          .datum(testdata)
+			        .transition().duration(1200)
+			          .attr('width', width)
+			          .attr('height', height)
+			          .call(chart);
+			
+			    chart.dispatch.on('stateChange', function(e) { nv.log('New State:', JSON.stringify(e)); });
+			
+			    return chart;
+			});
+
+	</script>
 
 {% endblock %}

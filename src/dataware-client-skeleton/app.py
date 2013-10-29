@@ -37,7 +37,7 @@ RESOURCEUSERNAME = Config.get("DatawareClient", "resourceusername")
 RESOURCENAME     = Config.get("DatawareClient", "resourcename") 
 EXTENSION_COOKIE = Config.get("DatawareClient", "extension_cookie")
 RESOURCEURI = Config.get("DatawareClient", "resource")
-
+fileList = []
 
 def login_required(f):
     @wraps(f)
@@ -594,7 +594,7 @@ def experiment(execution_id):
                     if validateUrl(url):
                         experimentUrlList.append(url)
                 print "length of list is % s " % len(experimentUrlList)
-                fileList = []
+                
                 try:
                     textFile = open("randomUrls.txt","r")
                     print "textfile is % s " % textFile
@@ -653,10 +653,27 @@ def storeAnswer():
         results = request.form['finalResults']
         finalResultList = eval(ast.literal_eval(json.dumps(results)))
         print  "converted list % s" % finalResultList
+        #initialise correct , incorrect and undefined parameters
+        correct = incorrect = undefined = 0
         #remove\r\n from the urls before storing them in the database
         for element in finalResultList:
             element['url'] = element['url'].rstrip('\r\n')
-            print(element['url'])
+            #check for the correct ,incorrect and no answer.
+            if element['ans'] == '1':
+                if element['url'] in fileList:
+                    incorrect += 1
+                else:
+                    correct += 1
+            elif element['ans'] == '0':
+                if element['url'] in fileList:
+                    correct += 1
+                else:
+                    incorrect += 1
+            elif element['ans'] == '2':
+                undefined += 1
+              
+        print('correct , incorrect and undefined values are %s, %s, %s ' %(correct,incorrect,undefined))            
+            
         print "inside post answer % s ****** %s" % (user_id,finalResultList )
         try:
             result = True
@@ -669,10 +686,9 @@ def storeAnswer():
         if (result == False):
             return  render_template('experimentEnd.html')
         print "experiment over %%%"
-        #store the state and the code and the various bits for re-use? 
-        access_token = eval(ast.literal_eval(json.dumps(request.form['access_token'])))
+        arrayToPass = {'correct':correct, 'incorrect':incorrect, 'undefined':undefined }
          
-        return render_template('experimentEnd.html',access_token=access_token)
+        return render_template('experimentEnd.html',arrayToPass=arrayToPass )
     
     else:
         #provide the user with the options relating to our catalogs
