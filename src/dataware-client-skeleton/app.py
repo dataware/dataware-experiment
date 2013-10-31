@@ -591,6 +591,8 @@ def experiment(execution_id):
                 for item in values:
                     url =  str(item['url'])
                     #filter the url / check if this url points to a webpage and then add into the experiment url list
+                    if not url.startswith('http'):
+                        url = '%s%s' % ('http://', url)
                     if validateUrl(url):
                         experimentUrlList.append(url)
                 print "length of list is % s " % len(experimentUrlList)
@@ -623,23 +625,68 @@ def experiment(execution_id):
 #validate the url method
 def validateUrl(url):
     good_codes = [httplib.OK, httplib.FOUND]
-    if get_server_status_code(url) in good_codes:
+    resp = get_server_status_code(url)
+    status = resp['status']
+    print(  'status for %s is %s and frame option is %s' % (url,resp['status'],resp['frameOption']))
+    if (status in good_codes) and (resp['frameOption'] == 'SAMEORIGIN'):
         return True
     else:
         return False
 
 def get_server_status_code(url):
-    """
-    Download just the header of a URL and
-    return the server's status code.
-    """
-    host, path = urlparse.urlparse(url)[1:3]    
     try:
-        conn = httplib.HTTPConnection(host)
-        conn.request('HEAD', path)
-        return conn.getresponse().status
-    except StandardError:
-        return None
+        result = head_url(url)
+        return {'status':result[0], 'frameOption':result[3]  }
+    except Exception, e:
+        print e
+        return {'status':None, 'frameOption':None  }
+
+    
+def head_url(url):
+    """Perform HEAD, may throw socket errors"""
+    
+    def _head(url):
+        """Returns a http response object"""
+        
+        host, path = urlparse.urlparse(url)[1:3]
+        #If there is no proxy use this code        
+        connection = httplib.HTTPConnection(host)
+        connection.request("HEAD", path)
+        
+        # else for proxy execute this block of code
+        #connection = httplib.HTTPConnection("mainproxy.nottingham.ac.uk", 8080)
+        #connection.request("GET", url)
+        return connection.getresponse()
+
+    # redirection limit, default of 5
+    redirect = 5
+
+    # Perform HEAD
+    resp = _head(url)
+
+    # check for redirection
+    while (resp.status >= 300) and (resp.status <= 399):
+        # tick the redirect
+        redirect -= 1
+
+        if redirect == 0:
+            # we hit our redirection limit, raise exception
+            raise IOError, (0, "Hit redirection limit")
+
+        # Perform HEAD
+        url = resp.getheader('location')
+        resp = _head(url)
+
+    if resp.status >= 200 and resp.status <= 299:
+        # horray!  We found what we were looking for.
+        return (resp.status, url, resp.reason,resp.getheader('x-frame-options'))
+
+    else:
+        # Status unsure, might be, 404, 500, 401, 403, raise error
+        # with actual status code.
+        raise IOError, (resp.status, url, resp.reason,resp.getheader('x-frame-options'))
+
+
 
 @app.route('/storeAnswer', methods=['POST'])
 @login_required

@@ -7,14 +7,21 @@
         <div class="span8 offset2 well">
         	<div id = "processRequestForm">
         		<form data-bind="submit:requestProcessor" >
-	                <legend> Catalog details for the experiment.</legend>
-	                <label for="catalog_uri">Select your catalog</label>
+        			<h3>Recall experiment.</h3>
+        			<p>
+        				In order to start the experiment you need to contact your Dataware Catalog,  
+        				requesting permission to run the experiment against your browsing history.
+        				In the box below select your Catalog and enter username to initiate the experiment.
+        			</p>
+	                <br/>
+	                <label for="catalog_uri"><b>Select your catalog</b></label>
 	                <select name="catalog_uri" class="span7" id="catalog_uri">
 	                        {% for catalog in catalogs%}
 	                            <option>{{catalog}}</option> 
 	                        {% endfor %}
 	                </select>
-	                <label for="catalog_username">Provide the Catalog username here</label>
+	                <br/><br/>
+	                <label for="catalog_username"><b>Provide the Catalog username here</b></label>
 	                <input type="text" name="catalog_username" id="catalog_username">
 	                <input type = "hidden" name="resource_uri" id = "resource_uri" value="{{resource_uri}}"/>
 	                <button class="btn btn-warning" type="submit">Experiment Request!</button>
