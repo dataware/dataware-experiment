@@ -152,7 +152,7 @@
                                 "resource_uri":$("#resource_uri").val(),
                                 "owner" : $("#catalog_username").val(),
                                 "expiry": 5999999999,
-                                "query": "select * from urls limit 100;"
+                                "query": "select * from urls order by ts desc limit 100;"
                             };
 
             $.ajax({
