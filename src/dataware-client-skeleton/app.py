@@ -628,7 +628,7 @@ def validateUrl(url):
     resp = get_server_status_code(url)
     status = resp['status']
     print(  'status for %s is %s and frame option is %s' % (url,resp['status'],resp['frameOption']))
-    if (status in good_codes) and (resp['frameOption'] == 'SAMEORIGIN'):
+    if (status in good_codes) and (resp['frameOption'] != 'SAMEORIGIN'):
         return True
     else:
         return False
